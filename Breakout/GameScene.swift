@@ -13,6 +13,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var paddle = SKSpriteNode()
     var brick = SKSpriteNode()
     var loseZone = SKSpriteNode()
+    
     override func didMove(to view: SKView) {
         //this stuff happens once (when the app open)
         physicsWorld.contactDelegate = self
@@ -21,27 +22,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         resetGame()
         makeLoseZone()
         kickBall()
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches {
-            let location = touch.location(in: self)
-            paddle.position.x = location.x
-        }
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        for touch in touches {
-            let location = touch.location(in: self)
-            paddle.position.x = location.x
-        }
-    }
-    
-    func resetGame(){
-        //this stuff happens before each game starts
-        makeBall()
-        makePaddle()
-        makeBrick()
     }
     
     func kickBall() {
@@ -86,8 +66,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ball.physicsBody?.restitution = 1
         // does not slow down over time
         ball.physicsBody?.linearDamping = 0
-        ball.physicsBody?.contactTestBitMask = (ball.physicsBody?.contactTestBitMask)!//exciting which is why we have an !
-        
+        ball.physicsBody?.contactTestBitMask = (ball.physicsBody?.collisionBitMask)!//exciting which is why we have an !
         addChild(ball)  // add ball object to the view
     }
     
@@ -118,5 +97,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         loseZone.physicsBody = SKPhysicsBody(rectangleOf: loseZone.size)
         loseZone.physicsBody?.isDynamic = false
         addChild(loseZone)
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for touch in touches {
+            let location = touch.location(in: self)
+            paddle.position.x = location.x
+        }
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for touch in touches {
+            let location = touch.location(in: self)
+            paddle.position.x = location.x
+        }
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        if contact.bodyA.node?.name == "brick" ||
+            contact.bodyB.node?.name == "brick" {
+            print("You Win!")
+            brick.removeFromParent()
+            ball.removeFromParent()
+        }
+        if contact.bodyA.node?.name == "loseZone" ||
+            contact.bodyB.node?.name == "loseZone" {
+            print("You Lose!")
+            ball.removeFromParent()
+        }
+    }
+    
+    func resetGame(){
+        //this stuff happens before each game starts
+        makeBall()
+        makePaddle()
+        makeBrick()
     }
 }
